@@ -1,28 +1,33 @@
+require("express-async-errors");
+
+const AppError = require("./utils/AppError")
 const express = require('express');
-const { send } = require('express/lib/response');
+
+const routes = require("./routes")
 
 const app = express();
+app.use(express.json());
 
-// Adicionando Routes Params com a rota/:name
-app.get("/message/:id/:user", (request, response) => {
+app.use(routes);
 
-   // Desestruturando os parâmetros
-   const { id, user } = request.params;
+app.use(( error, request, response, next) => {
+   // Para verificar se o erro foi do lado do cliente
+   if(error instanceof AppError) {
+      return response.status(error.statusCode).json({
+         status: "error",
+         message: error.message
+      });
+   }
 
-   // Fazendo a request para ver o parâmetro da ID
-   response.send(`
-      Mensagem ID: ${id}.
-      Para o o usuário: ${user}
-   `);
-});
+   console.error(error);
 
-
-// Adicionando um Query Params para minha rota
-app.get("/users", (request, response) => {
-   const { page, limit } = request.query;
-
-   response.send(`Página: ${page}. Mostrar: ${limit}`)
-});
+   // Para verificar se o erro foi do lado do servidor
+   return response.status(500).json({
+      status: "error",
+      message: "Internal server error"
+   })
+})
 
 const PORT = 3333;
 app.listen(PORT, () => console.log(`Server is running on Port ${PORT}`));
+
