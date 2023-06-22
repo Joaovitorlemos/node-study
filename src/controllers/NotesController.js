@@ -5,12 +5,12 @@ class NotesController{
       const { title, description, tags, links } = request.body;
       const { user_id } = request.params;
 
+      // colocar a variável como um array, pois o insert devolve dentro de um array
       const [note_id] = await knex("notes").insert({
          title,
          description,
          user_id
       })
-
 
       const linkInsert = links.map(link => {
          return {
